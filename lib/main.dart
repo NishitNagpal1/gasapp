@@ -13,15 +13,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Gas App',
-        home: const HomePage(),
-        theme: ThemeData(
-            textTheme: const TextTheme(
-                bodyLarge: TextStyle(fontFamily: 'Mairy Bold'),
-                bodyMedium: TextStyle(fontFamily: 'Mairy Regular'))));
-    late Stream<String> dateTimeStream;
-    StreamSubscription<LocationData>? locationSubscription;
+      debugShowCheckedModeBanner: false,
+      title: 'Gas App',
+      home: const HomePage(),
+      theme: ThemeData(fontFamily: 'Mairy'),
+    );
   }
 }
 
@@ -58,7 +54,7 @@ class _HomePageState extends State<HomePage> {
                 width: double.infinity,
                 height: 30,
                 child: const Text('Sample Date and Time:',
-                    style: TextStyle(fontSize: 20))),
+                    style: TextStyle(fontSize: 30))),
             Container(
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.green.shade900)),
@@ -166,13 +162,15 @@ class _HomePageState extends State<HomePage> {
                     border: Border.all(color: Colors.green.shade900)),
                 width: double.infinity,
                 height: 30,
-                child: const Text('RH 1 (inside):', style: TextStyle(fontSize: 20))),
+                child: const Text('RH 1 (inside):',
+                    style: TextStyle(fontSize: 20))),
             Container(
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.green.shade900)),
                 width: double.infinity,
                 height: 30,
-                child: const Text('RH 2 (outside):', style: TextStyle(fontSize: 20))),
+                child: const Text('RH 2 (outside):',
+                    style: TextStyle(fontSize: 20))),
             BottomNavigationBar(
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(

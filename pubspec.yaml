@@ -63,8 +63,8 @@ flutter:
   fonts:
     - family: Mairy
       fonts:
-        - asset: fonts/Mairy Regular.otf
-        - asset: fonts/Mairy Bold.otf
+        - asset: fonts/mairy_regular.ttf
+        - asset: fonts/mairy_bold.ttf
           weight: 700
 
   # To add assets to your application, add an assets section, like this:
