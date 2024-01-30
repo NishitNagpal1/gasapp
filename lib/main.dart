@@ -1,14 +1,81 @@
+// ignore_for_file: avoid_types_as_parameter_names
+
 import 'dart:async';
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class LocationService {
+  final Location location = Location();
+
+  Stream<LocationData>? _locationStream;
+
+  Stream<LocationData> get locationStream {
+    _locationStream ??= location.onLocationChanged;
+    return _locationStream!;
+  }
+
+  Future<void> initializeLocationService() async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+
+    // Check and request location service
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) return;
+    }
+
+    // Check and request permission
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) return;
+    }
+
+    // Start listening to the location stream
+    location.onLocationChanged.listen((LocationData currentLocation) {
+      // Use currentLocation with your logic
+    });
+  }
+}
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  double? currentLatitude;
+  double? currentLongitude;
+  StreamSubscription<LocationData>? locationSubscription;
+  late Stream<String> dateTimeStream;
+  @override
+  void initState() {
+    super.initState();
+    LocationService().initializeLocationService();
+    locationSubscription =
+        LocationService().locationStream.listen((locationData) {
+      setState(() {
+        currentLatitude = locationData.latitude;
+        currentLongitude = locationData.longitude;
+      });
+    });
+    // Declaration of dateTimeStream
+    dateTimeStream = Stream.periodic(const Duration(seconds: 1), (count) {
+      final now = DateTime.now();
+      final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      return 'Date: $formattedDate';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +85,13 @@ class MyApp extends StatelessWidget {
       home: const HomePage(),
       theme: ThemeData(fontFamily: 'Mairy'),
     );
+  }
+
+  @override
+  void dispose() {
+    // Cancel the subscription when the widget is disposed
+    locationSubscription?.cancel();
+    super.dispose();
   }
 }
 
@@ -43,7 +117,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green.shade300,
-        title: const Text('Gas Sensor Data Collection'),
+        title: const Text('Gas Sensor Data Collection',
+            style: TextStyle(fontSize: 40)),
       ),
       body: ListView(
         children: [
@@ -54,7 +129,7 @@ class _HomePageState extends State<HomePage> {
                 width: double.infinity,
                 height: 30,
                 child: const Text('Sample Date and Time:',
-                    style: TextStyle(fontSize: 30))),
+                    style: TextStyle(fontSize: 20))),
             Container(
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.green.shade900)),
@@ -99,11 +174,14 @@ class _HomePageState extends State<HomePage> {
                         text: 'H',
                         style: TextStyle(color: Colors.black, fontSize: 20)),
                     TextSpan(
-                        text: '3:',
+                        text: '3',
                         style: TextStyle(
                             color: Colors.black,
                             fontSize: 10,
                             fontFeatures: [FontFeature.subscripts()])),
+                    TextSpan(
+                        text: ':',
+                        style: TextStyle(color: Colors.black, fontSize: 20)),
                   ]),
                 )),
             Container(
@@ -123,11 +201,14 @@ class _HomePageState extends State<HomePage> {
                       fontSize: 20,
                     )),
                 TextSpan(
-                    text: '4:',
+                    text: '4',
                     style: TextStyle(
                         color: Colors.black,
                         fontSize: 10,
-                        fontFeatures: [FontFeature.subscripts()]))
+                        fontFeatures: [FontFeature.subscripts()])),
+                TextSpan(
+                    text: ':',
+                    style: TextStyle(color: Colors.black, fontSize: 20))
               ])),
             ),
             Container(
@@ -150,11 +231,14 @@ class _HomePageState extends State<HomePage> {
                             fontSize: 20,
                             fontFeatures: [FontFeature.subscripts()])),
                     TextSpan(
-                        text: '2:',
+                        text: '2',
                         style: TextStyle(
                             color: Colors.black,
                             fontSize: 10,
                             fontFeatures: [FontFeature.subscripts()])),
+                    TextSpan(
+                        text: ':',
+                        style: TextStyle(color: Colors.black, fontSize: 20))
                   ]),
                 )),
             Container(
@@ -171,6 +255,19 @@ class _HomePageState extends State<HomePage> {
                 height: 30,
                 child: const Text('RH 2 (outside):',
                     style: TextStyle(fontSize: 20))),
+            Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green.shade900)),
+                width: double.infinity,
+                height: 30,
+                child: const Text('Latitude:', style: TextStyle(fontSize: 20))),
+            Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green.shade900)),
+                width: double.infinity,
+                height: 30,
+                child:
+                    const Text('Longitude:', style: TextStyle(fontSize: 20))),
             BottomNavigationBar(
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
